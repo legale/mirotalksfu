@@ -126,7 +126,7 @@ module.exports = {
         hostUrl: process.env.SERVER_HOST_URL || 'https://localhost:3010',
         listen: {
             ip: process.env.SERVER_LISTEN_IP || '0.0.0.0',
-            port: process.env.SERVER_LISTEN_PORT || 3010,
+            port: process.env.SERVER_LISTEN_PORT || 8080,
         },
 
         /**
@@ -276,8 +276,8 @@ module.exports = {
                 enabled: process.env.IP_WHITELIST_ENABLED === 'true',
                 allowedIPs: process.env.IP_WHITELIST_ALLOWED
                     ? process.env.IP_WHITELIST_ALLOWED.split(splitChar)
-                          .map((ip) => ip.trim())
-                          .filter((ip) => ip !== '')
+                        .map((ip) => ip.trim())
+                        .filter((ip) => ip !== '')
                     : ['127.0.0.1', '::1'],
             },
         },
@@ -427,45 +427,45 @@ module.exports = {
 
             users: process.env.HOST_USERS
                 ? process.env.HOST_USERS.split('|').map((userStr) => {
-                      const [username, password, displayname, allowedRoomsStr] = userStr.split(':');
-                      return {
-                          username: username || '',
-                          password: password || '',
-                          displayname: displayname || '',
-                          allowed_rooms: allowedRoomsStr
-                              ? allowedRoomsStr
-                                    .split(',')
-                                    .map((room) => room.trim())
-                                    .filter((room) => room !== '')
-                              : ['*'],
-                      };
-                  })
+                    const [username, password, displayname, allowedRoomsStr] = userStr.split(':');
+                    return {
+                        username: username || '',
+                        password: password || '',
+                        displayname: displayname || '',
+                        allowed_rooms: allowedRoomsStr
+                            ? allowedRoomsStr
+                                .split(',')
+                                .map((room) => room.trim())
+                                .filter((room) => room !== '')
+                            : ['*'],
+                    };
+                })
                 : [
-                      {
-                          username: 'username',
-                          password: 'password',
-                          displayname: 'username displayname',
-                          allowed_rooms: ['*'],
-                      },
-                      {
-                          username: 'username2',
-                          password: 'password2',
-                          displayname: 'username2 displayname',
-                          allowed_rooms: ['room1', 'room2'],
-                      },
-                      {
-                          username: 'username3',
-                          password: 'password3',
-                          displayname: 'username3 displayname',
-                      },
-                      //...
-                  ],
+                    {
+                        username: 'username',
+                        password: 'password',
+                        displayname: 'username displayname',
+                        allowed_rooms: ['*'],
+                    },
+                    {
+                        username: 'username2',
+                        password: 'password2',
+                        displayname: 'username2 displayname',
+                        allowed_rooms: ['room1', 'room2'],
+                    },
+                    {
+                        username: 'username3',
+                        password: 'password3',
+                        displayname: 'username3 displayname',
+                    },
+                    //...
+                ],
 
             presenters: {
                 list: process.env.PRESENTERS
                     ? process.env.PRESENTERS.split(splitChar)
-                          .map((presenter) => presenter.trim())
-                          .filter((presenter) => presenter !== '')
+                        .map((presenter) => presenter.trim())
+                        .filter((presenter) => presenter !== '')
                     : ['Miroslav Pejic', 'miroslav.pejic.85@gmail.com'],
                 join_first: process.env.PRESENTER_JOIN_FIRST !== 'false',
             },
@@ -993,16 +993,14 @@ module.exports = {
 
             app: {
                 language: process.env.UI_LANGUAGE || 'en',
-                name: process.env.APP_NAME || 'MiroTalk SFU',
+                name: process.env.APP_NAME || 'APP NAME',
                 title:
-                    process.env.APP_TITLE ||
-                    '<h1>MiroTalk SFU</h1> Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
+                    process.env.APP_TITLE || '<h1>APP TITLE</h1>',
                 description:
-                    process.env.APP_DESCRIPTION ||
-                    'Start your next video call with a single click. No download, plug-in, or login is required.',
-                joinDescription: process.env.JOIN_DESCRIPTION || 'Pick a room name.<br />How about this one?',
-                joinButtonLabel: process.env.JOIN_BUTTON_LABEL || 'JOIN ROOM',
-                joinLastLabel: process.env.JOIN_LAST_LABEL || 'Your recent room:',
+                    process.env.APP_DESCRIPTION || 'APP DESCRIPTION',
+                joinDescription: process.env.JOIN_DESCRIPTION || 'JOIN_DESCRIPTION',
+                joinButtonLabel: process.env.JOIN_BUTTON_LABEL || 'JOIN_BUTTON_LABEL',
+                joinLastLabel: process.env.JOIN_LAST_LABEL || 'JOIN_LAST_LABEL',
             },
 
             /**
@@ -1011,12 +1009,12 @@ module.exports = {
              * Site-wide settings including icons and page-specific content.
              */
             site: {
-                title: process.env.SITE_TITLE || 'MiroTalk SFU, Free Video Calls, Messaging and Screen Sharing',
+                title: process.env.SITE_TITLE || 'SITE_TITLE',
                 icon: process.env.SITE_ICON_PATH || '../images/logo.svg',
                 appleTouchIcon: process.env.APPLE_TOUCH_ICON_PATH || '../images/logo.svg',
-                newRoomTitle: process.env.NEW_ROOM_TITLE || 'Pick name. <br />Share URL. <br />Start conference.',
+                newRoomTitle: process.env.NEW_ROOM_TITLE || 'NEW_ROOM_TITLE',
                 newRoomDescription:
-                    process.env.NEW_ROOM_DESC || 'Each room has its disposable URL. Just pick a name and share.',
+                    process.env.NEW_ROOM_DESC || 'NEW_ROOM_DESC',
             },
 
             /**
@@ -1027,8 +1025,8 @@ module.exports = {
             meta: {
                 description:
                     process.env.META_DESCRIPTION ||
-                    'MiroTalk SFU powered by WebRTC and mediasoup for real-time video communications.',
-                keywords: process.env.META_KEYWORDS || 'webrtc, video calls, conference, screen sharing, mirotalk, sfu',
+                    'MiroTalk SFU',
+                keywords: process.env.META_KEYWORDS || 'META_KEYWORDS',
             },
 
             /**
@@ -1037,13 +1035,13 @@ module.exports = {
              * Metadata for rich social media sharing.
              */
             og: {
-                type: process.env.OG_TYPE || 'app-webrtc',
-                siteName: process.env.OG_SITE_NAME || 'MiroTalk SFU',
-                title: process.env.OG_TITLE || 'Click the link to make a call.',
+                type: process.env.OG_TYPE || 'OG_TYPE',
+                siteName: process.env.OG_SITE_NAME || 'OG_SITE_NAME',
+                title: process.env.OG_TITLE || 'OG_TITLE',
                 description:
-                    process.env.OG_DESCRIPTION || 'MiroTalk SFU provides real-time video calls and screen sharing.',
-                image: process.env.OG_IMAGE_URL || 'https://sfu.mirotalk.com/images/mirotalksfu.png',
-                url: process.env.OG_URL || 'https://sfu.mirotalk.com',
+                    process.env.OG_DESCRIPTION || 'OG_DESCRIPTION',
+                image: process.env.OG_IMAGE_URL || 'OG_IMAGE_URL',
+                url: process.env.OG_URL || 'OG_URL',
             },
 
             /**
@@ -1072,10 +1070,9 @@ module.exports = {
             whoAreYou: {
                 title: process.env.WHO_ARE_YOU_TITLE || 'Who are you?',
                 description:
-                    process.env.WHO_ARE_YOU_DESCRIPTION ||
-                    "If you\'re the presenter, please log in now.<br />Otherwise, kindly wait for the presenter to join.",
-                buttonLoginLabel: process.env.WHO_ARE_YOU_BUTTON_LOGIN_LABEL || 'LOGIN',
-                buttonJoinLabel: process.env.WHO_ARE_YOU_JOIN_LABEL || 'JOIN ROOM',
+                    process.env.WHO_ARE_YOU_DESCRIPTION || "WHO_ARE_YOU_DESCRIPTION",
+                buttonLoginLabel: process.env.WHO_ARE_YOU_BUTTON_LOGIN_LABEL || 'WHO_ARE_YOU_BUTTON_LOGIN_LABEL',
+                buttonJoinLabel: process.env.WHO_ARE_YOU_JOIN_LABEL || 'WHO_ARE_YOU_JOIN_LABEL',
             },
 
             /**
@@ -1089,27 +1086,27 @@ module.exports = {
                 title: `WebRTC SFU v${packageJson.version}`,
                 html: `
                     <button id="support-button" data-umami-event="Support button"
-                        onclick="window.open('${process.env.SUPPORT_URL || 'https://codecanyon.net/user/miroslavpejic85'}', '_blank')">
-                        <i class="fas fa-heart"></i> ${process.env.SUPPORT_TEXT || 'Support'}
+                        onclick="window.open('${process.env.SUPPORT_URL || 'SUPPORT_URL'}', '_blank')">
+                        <i class="fas fa-heart"></i> ${process.env.SUPPORT_TEXT || 'SUPPORT_TEXT'}
                     </button>
                     <br />
                     <br />
                     ${process.env.AUTHOR_LABEL || 'Author'}: 
                     <a id="linkedin-button" data-umami-event="Linkedin button"
-                        href="${process.env.LINKEDIN_URL || 'https://www.linkedin.com/in/miroslav-pejic-976a07101/'}" 
+                        href="${process.env.LINKEDIN_URL || 'LINKEDIN_URL'}" 
                         target="_blank">
-                        ${process.env.AUTHOR_NAME || 'Miroslav Pejic'}
+                        ${process.env.AUTHOR_NAME || 'AUTHOR_NAME'}
                     </a>
                     <br />
                     <br />
-                    ${process.env.EMAIL_LABEL || 'Email'}: 
+                    ${process.env.EMAIL_LABEL || 'EMAIL_LABEL'}: 
                     <a id="email-button" data-umami-event="Email button"
-                        href="mailto:${process.env.CONTACT_EMAIL || 'miroslav.pejic.85@gmail.com'}?subject=${process.env.EMAIL_SUBJECT || 'MiroTalk SFU info'}">
-                        ${process.env.CONTACT_EMAIL || 'miroslav.pejic.85@gmail.com'}
+                        href="mailto:${process.env.CONTACT_EMAIL || 'CONTACT_EMAIL'}?subject=${process.env.EMAIL_SUBJECT || 'EMAIL_SUBJECT'}">
+                        ${process.env.CONTACT_EMAIL || 'CONTACT_EMAIL'}
                     </a>
                     <hr />
                     <span>
-                        &copy; ${new Date().getFullYear()} ${process.env.COPYRIGHT_TEXT || 'MiroTalk SFU, all rights reserved'}
+                        &copy; ${new Date().getFullYear()} ${process.env.COPYRIGHT_TEXT || 'COPYRIGHT_TEXT'}
                     </span>
                     <hr />
                     `,
@@ -1131,11 +1128,11 @@ module.exports = {
                     position: process.env.WIDGET_SUPPORT_POSITION || 'top-right',
                     expertImages: process.env.WIDGET_SUPPORT_EXPERT_IMAGES
                         ? process.env.WIDGET_SUPPORT_EXPERT_IMAGES.split(splitChar)
-                              .map((url) => url.trim())
-                              .filter(Boolean)
+                            .map((url) => url.trim())
+                            .filter(Boolean)
                         : [
-                              'https://photo.cloudron.pocketsolution.net/uploads/original/95/7d/a5f7f7a2c89a5fee7affda5f013c.jpeg',
-                          ],
+                            'https://photo.cloudron.pocketsolution.net/uploads/original/95/7d/a5f7f7a2c89a5fee7affda5f013c.jpeg',
+                        ],
                     buttons: {
                         audio: process.env.WIDGET_SUPPORT_BUTTON_AUDIO !== 'false',
                         video: process.env.WIDGET_SUPPORT_BUTTON_VIDEO !== 'false',
@@ -1361,8 +1358,8 @@ module.exports = {
          */
         stats: {
             enabled: process.env.STATS_ENABLED !== 'false',
-            src: process.env.STATS_SRC || 'https://stats.mirotalk.com/script.js',
-            id: process.env.STATS_ID || '41d26670-f275-45bb-af82-3ce91fe57756',
+            src: process.env.STATS_SRC || 'STATS_SRC',
+            id: process.env.STATS_ID || 'STATS_ID',
         },
     },
 
@@ -1480,13 +1477,16 @@ module.exports = {
                     channels: 2, // Stereo audio
                 },
 
-                // VP8 video codec (widely supported, good for compatibility)
+                // H.264 Main profile (better compression than Baseline)
                 {
                     kind: 'video',
-                    mimeType: 'video/VP8',
-                    clockRate: 90000, // Standard video clock rate
+                    mimeType: 'video/h264',
+                    clockRate: 90000,
                     parameters: {
-                        'x-google-start-bitrate': 1000, // Initial bitrate (kbps)
+                        'packetization-mode': 1,
+                        'profile-level-id': '4d0032', // Main 4.0
+                        'level-asymmetry-allowed': 1,
+                        'x-google-start-bitrate': 1000,
                     },
                 },
 
@@ -1501,6 +1501,18 @@ module.exports = {
                         'x-google-start-bitrate': 1000,
                     },
                 },
+
+
+                // VP8 video codec (widely supported, good for compatibility)
+                {
+                    kind: 'video',
+                    mimeType: 'video/VP8',
+                    clockRate: 90000, // Standard video clock rate
+                    parameters: {
+                        'x-google-start-bitrate': 1000, // Initial bitrate (kbps)
+                    },
+                },
+
 
                 // VP9 Profile 2: Supports HDR and 10/12-bit color
                 {
@@ -1526,18 +1538,7 @@ module.exports = {
                     },
                 },
 
-                // H.264 Main profile (better compression than Baseline)
-                {
-                    kind: 'video',
-                    mimeType: 'video/h264',
-                    clockRate: 90000,
-                    parameters: {
-                        'packetization-mode': 1,
-                        'profile-level-id': '4d0032', // Main 4.0
-                        'level-asymmetry-allowed': 1,
-                        'x-google-start-bitrate': 1000,
-                    },
-                },
+
             ],
         },
 

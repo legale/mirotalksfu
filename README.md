@@ -10,14 +10,6 @@
 <a href="https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970">![License: Extended](https://img.shields.io/badge/License-Extended_Commercial_Use-darkgreen.svg)</a>
 <a href="https://discord.gg/rgGYfeYW3N">![Community](https://img.shields.io/badge/Community-forum-pink.svg)</a>
 
-This project is proudly sponsored by
-
-</div>
-
-<h1 align=center>Recall.ai - API for meeting recording</h1>
-<p align="center">
-    <a href="https://recall.ai/?utm_source=mirotalksfu&utm_medium=sponsorship"><strong>Recall.ai</strong></a> – an API for recording Zoom, Google Meet, Microsoft Teams, and in-person meetings.
-</p>
 
 <hr />
 
@@ -222,7 +214,7 @@ $ npm install
 # Start the server
 $ npm start
 # If you want to start the server on a different port than the default use an env var
-$ SERVER_LISTEN_PORT=3011 npm start
+$ SERVER_LISTEN_PORT=8080 npm start
 ```
 
 - Open [https://localhost:3010](https://localhost:3010) or `:3011` if the default port has been changed in your browser.

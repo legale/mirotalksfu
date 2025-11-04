@@ -1,6 +1,6 @@
 services:
     mirotalksfu:
-        image: mirotalk/sfu:latest
+        image: mirotalk/sfu:custom
         container_name: mirotalksfu
         hostname: mirotalksfu
         restart: unless-stopped
@@ -8,7 +8,7 @@ services:
         # If you enable 'network_mode: host', you can comment out or remove the 'ports' section below.
         # network_mode: 'host'
         ports:
-            - '3010:3010/tcp'
+            - '8080:3010/tcp'
             - '40000-40100:40000-40100/tcp'
             - '40000-40100:40000-40100/udp'
         volumes:

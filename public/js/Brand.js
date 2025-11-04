@@ -38,9 +38,9 @@ let BRAND = {
     app: {
         language: 'en',
         name: 'MiroTalk SFU',
-        title: 'MiroTalk SFU<br />Free browser based Real-time video calls.<br />Simple, Secure, Fast.',
+        title: 'MiroTalk SFU',
         description:
-            'Start your next video call with a single click. No download, plug-in, or login is required. Just get straight to talking, messaging, and sharing your screen.',
+            'Free web based video calls',
         joinDescription: 'Pick a room name.<br />How about this one?',
         joinButtonLabel: 'JOIN ROOM',
         joinLastLabel: 'Your recent room:',
@@ -78,7 +78,7 @@ let BRAND = {
     },
     about: {
         imageUrl: '../images/mirotalk-logo.gif',
-        title: '<strong>WebRTC SFU v2.0.00</strong>',
+        title: '<strong>WebRTC SFU v2.0.01</strong>',
         html: `
             <button 
                 id="support-button" 

@@ -4,7 +4,7 @@
 ███████ ███████ ██████  ██    ██ ███████ ██████  
 ██      ██      ██   ██ ██    ██ ██      ██   ██ 
 ███████ █████   ██████  ██    ██ █████   ██████  
-     ██ ██      ██   ██  ██  ██  ██      ██   ██ 
+     ██ ██      ██   ██  ██  ██  ██      ██   ██ 
 ███████ ███████ ██   ██   ████   ███████ ██   ██                                           
 
 prod dependencies: {
@@ -24,7 +24,6 @@ prod dependencies: {
     fluent-ffmpeg           : https://www.npmjs.com/package/fluent-ffmpeg
     he                      : https://www.npmjs.com/package/he
     helmet                  : https://www.npmjs.com/package/helmet
-    httpolyglot             : https://www.npmjs.com/package/httpolyglot
     js-yaml                 : https://www.npmjs.com/package/js-yaml
     jsdom                   : https://www.npmjs.com/package/jsdom
     jsonwebtoken            : https://www.npmjs.com/package/jsonwebtoken
@@ -64,7 +63,7 @@ dev dependencies: {
  * @license For commercial or closed source, contact us at license.mirotalk@gmail.com or purchase directly via CodeCanyon
  * @license CodeCanyon: https://codecanyon.net/item/mirotalk-sfu-webrtc-realtime-video-conferences/40769970
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 2.0.00
+ * @version 2.0.01
  *
  */
 
@@ -78,7 +77,6 @@ const { fixDurationOrRemux } = require('./FixDurationOrRemux');
 const cors = require('cors');
 const compression = require('compression');
 const socketIo = require('socket.io');
-const httpolyglot = require('httpolyglot');
 const mediasoup = require('mediasoup');
 const mediasoupClient = require('mediasoup-client');
 const http = require('http');
@@ -143,7 +141,9 @@ const corsOptions = {
     methods: config.server?.cors?.methods || ['GET', 'POST'],
 };
 
-const server = httpolyglot.createServer(options, app);
+const server = http.createServer(options, app);
+
+
 
 const io = socketIo(server, {
     maxHttpBufferSize: 1e7,
@@ -151,7 +151,7 @@ const io = socketIo(server, {
     cors: corsOptions,
 });
 
-const host = config?.server?.hostUrl || `http://localhost:${config?.server?.listen?.port || 3010}`;
+const host = config?.server?.hostUrl || `http://localhost:${config?.server?.listen?.port}`;
 const trustProxy = Boolean(config?.server?.trustProxy);
 
 const jwtCfg = {
@@ -239,12 +239,6 @@ if (enabled && commands.length > 0 && token) {
     log.info('Discord bot is enabled and starting');
 }
 
-// Stats
-const defaultStats = {
-    enabled: true,
-    src: 'https://stats.mirotalk.com/script.js',
-    id: '41d26670-f275-45bb-af82-3ce91fe57756',
-};
 
 // OpenAI/ChatGPT
 let chatGPT;
@@ -442,20 +436,107 @@ function OIDCAuth(req, res, next) {
     }
 }
 
+
+function install_static_logger_with_stall() {
+    server.on('connection', (sock) => {
+        const raddr = `${sock.remoteAddress}:${sock.remotePort}`;
+        sock.setKeepAlive(true, 20_000); // tcp keepalive hints for long transfers
+        log.debug('conn open', { raddr });
+        sock.on('timeout', () => log.warn('conn timeout', { raddr }));
+        sock.on('error', (e) => log.error('conn error', { raddr, err: e.message }));
+        sock.on('close', (hadErr) => log.debug('conn close', { raddr, hadErr }));
+    });
+
+    app.use((req, res, next) => {
+        const is_get_head = req.method === 'GET' || req.method === 'HEAD';
+        if (!is_get_head) return next();
+
+        const start_ns = process.hrtime.bigint();
+        const req_id = Math.random().toString(36).slice(2, 10);
+        const rinfo = {
+            id: req_id,
+            method: req.method,
+            url: req.originalUrl || req.url,
+            ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            ua: req.headers['user-agent'],
+            range: req.headers['range'] || null,
+        };
+
+        let bytes_sent = 0;
+        let aborted = false;
+        let last_bytes = 0;
+        let last_tick = Date.now();
+
+        const orig_write = res.write;
+        const orig_end = res.end;
+
+        res.write = function (chunk, enc, cb) {
+            if (chunk) bytes_sent += Buffer.isBuffer(chunk) ? chunk.length : Buffer.byteLength(chunk, enc);
+            return orig_write.call(this, chunk, enc, cb);
+        };
+        res.end = function (chunk, enc, cb) {
+            if (chunk) bytes_sent += Buffer.isBuffer(chunk) ? chunk.length : Buffer.byteLength(chunk, enc);
+            return orig_end.call(this, chunk, enc, cb);
+        };
+
+        // stall watchdog: if no progress N seconds while socket is still open -> log
+        const stall_ms = 15_000; // adjust if needed
+        const tick = setInterval(() => {
+            const now = Date.now();
+            if (bytes_sent > last_bytes) {
+                last_bytes = bytes_sent;
+                last_tick = now;
+                log.debug('static progress', { ...rinfo, bytes_sent });
+            } else if (now - last_tick >= stall_ms && !res.writableEnded) {
+                // do not kill, just log the stall to correlate with proxy/mobile drops
+                log.warn('static stalled', { ...rinfo, bytes_sent, stall_ms });
+                last_tick = now; // avoid spamming
+            }
+        }, 5_000);
+
+        const clear = () => clearInterval(tick);
+
+        req.on('aborted', () => {
+            aborted = true;
+            clear();
+            const dur_ms = Number((process.hrtime.bigint() - start_ns) / 1000000n);
+            log.warn('static aborted', { ...rinfo, status: res.statusCode, bytes_sent, dur_ms });
+        });
+
+        res.on('close', () => {
+            if (!res.writableEnded && !aborted) {
+                clear();
+                const dur_ms = Number((process.hrtime.bigint() - start_ns) / 1000000n);
+                log.warn('static socket_close', { ...rinfo, status: res.statusCode, bytes_sent, dur_ms });
+            }
+        });
+
+        res.on('finish', () => {
+            clear();
+            const dur_ms = Number((process.hrtime.bigint() - start_ns) / 1000000n);
+            const cl = res.getHeader('content-length');
+            const partial = res.statusCode === 206 || !!rinfo.range;
+            const level = aborted ? 'warn' : (res.statusCode >= 500 ? 'error' : 'info');
+            const msg = partial ? 'static finish partial' : 'static finish';
+            const p = { ...rinfo, status: res.statusCode, bytes_sent, hdr_len: cl ? String(cl) : null, dur_ms };
+            if (level === 'info') log.info(msg, p); else if (level === 'warn') log.warn(msg, p); else log.error(msg, p);
+        });
+
+        next();
+    });
+}
+
 function startServer() {
+    
     // Start the app
     app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
     app.use(helmet.noSniff()); // Enable content type sniffing prevention
-    // Use all static files from the public folder
-    app.use(
-        express.static(dir.public, {
-            setHeaders: (res, filePath) => {
-                if (filePath.endsWith('.js')) {
-                    res.setHeader('Content-Type', 'application/javascript');
-                } //...
-            },
-        })
-    );
+    
+    // uncomment this to enable static logger with stall detection
+    // install_static_logger_with_stall();
+
+    // Use all static files from the public folder    
+    app.use(express.static(dir.public));
     app.use(cors(corsOptions));
     app.use(compression());
     app.use(express.json({ limit: '50mb' })); // Handles JSON payloads
@@ -467,7 +548,6 @@ function startServer() {
     app.use(restrictAccessByIP);
 
     // Logs requests
-    /*
     app.use((req, res, next) => {
         log.debug('New request:', {
             headers: req.headers,
@@ -477,7 +557,6 @@ function startServer() {
         });
         next();
     });
-    */
 
     // Mattermost
     const mattermost = new Mattermost(app);
@@ -508,14 +587,14 @@ function startServer() {
     });
 
     // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
-    if (OIDC.enabled) {
+    if (false && OIDC.enabled) {
         const getDynamicConfig = (host, protocol) => {
             const baseURL = `${protocol}://${host}`;
             const config = OIDC.baseUrlDynamic
                 ? {
-                      ...OIDC.config,
-                      baseURL,
-                  }
+                    ...OIDC.config,
+                    baseURL,
+                }
                 : OIDC.config;
             return config;
         };
@@ -805,7 +884,7 @@ function startServer() {
 
     // Get stats endpoint
     app.get('/stats', (req, res) => {
-        const stats = config?.features?.stats || defaultStats;
+        const stats = config?.features?.stats;
         // log.debug('Send stats', stats);
         res.send(stats);
     });
@@ -2337,7 +2416,7 @@ function startServer() {
             socket.emit('newProducers', producerList);
         });
 
-        socket.on('getPeerCounts', async ({}, callback) => {
+        socket.on('getPeerCounts', async ({ }, callback) => {
             if (!roomExists(socket)) {
                 return callback({ error: 'Room not found' });
             }
@@ -2938,7 +3017,7 @@ function startServer() {
         });
 
         // https://docs.heygen.com/reference/list-avatars-v2
-        socket.on('getAvatarList', async ({}, cb) => {
+        socket.on('getAvatarList', async ({ }, cb) => {
             if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
@@ -2962,7 +3041,7 @@ function startServer() {
         });
 
         // https://docs.heygen.com/reference/list-voices-v2
-        socket.on('getVoiceList', async ({}, cb) => {
+        socket.on('getVoiceList', async ({ }, cb) => {
             if (!config?.integrations?.videoAI?.enabled || !config?.integrations?.videoAI?.apiKey)
                 return cb({ error: 'Video AI seems disabled, try later!' });
 
@@ -3205,7 +3284,7 @@ function startServer() {
             }
         });
 
-        socket.on('getRTMP', async ({}, cb) => {
+        socket.on('getRTMP', async ({ }, cb) => {
             if (!roomExists(socket)) return;
 
             const room = getRoom(socket);
